@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: nigerian-tax-ussd
+    runtime: java
+    buildCommand: mvn clean install -DskipTests
+    startCommand: java -jar target/nigerian-tax-ussd-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: AT_USERNAME
+        value: sandbox
+      - key: AT_API_KEY
+        sync: false
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: nigerian-tax-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: nigerian-tax-redis
+          property: port
+
+databases:
+  - name: nigerian-tax-redis
+    databaseName: nigerian-tax-redis
+    plan: free

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: timescale/timescaledb-ha:pg16
+    container_name: pgvector-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+    volumes:
+      - postgres_data:/home/postgres/pgdata/data
+    command: ["-c", "ai.ollama_host=http://host.docker.internal:11434"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  vectorizer-worker:
+    image: timescale/pgai-vectorizer-worker:latest
+    container_name: vectorizer-worker
+    environment:
+      # Fixed: Changed db:5433 to db:5432 (internal container port)
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASSWORD}@db:5432/${POSTGRES_DB_NAME}
+      OLLAMA_HOST: http://host.docker.internal:11434
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  postgres_data:

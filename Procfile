@@ -1,0 +1,1 @@
+web: java -Dserver.port=$PORT -jar target/nigerian-tax-ussd-0.0.1-SNAPSHOT.jar
