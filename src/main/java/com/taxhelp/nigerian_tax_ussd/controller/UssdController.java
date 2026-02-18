@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/ussd")
@@ -108,12 +110,15 @@ public class UssdController {
     }
 
     private String translatePrompt(String languageCode) {
-        String englishPrompt = "Enter your tax question: \n\nExample: What is VAT rate?";
+        // Pre translate prompt (cached)
+        Map<String, String> messages = Map.of(
+                "en", "Thank you! Processing your question. Answer will be sent via SMS shortly.",
+                "yo", "Ẹ ṣeun! Ń ṣiṣẹ́ lórí ìbéèrè rẹ. A ó fi ìdáhùn ránṣẹ́ nípasẹ̀ SMS láìpẹ́.",
+                "ig", "Daalụ! Na-edozi ajụjụ gị. A ga-eziga azịza site na SMS n'oge na-adịghị anya.",
+                "ha", "Na gode! Ana aiki akan tambayar ku. Za a aika amsa ta SMS nan ba da jimawa ba."
+        );
 
-        if (languageCode.equals("en")){
-            return englishPrompt;
-        }
-        return translationService.translate(englishPrompt, "en",  languageCode);
+        return messages.getOrDefault(languageCode, messages.get("en"));
     }
 
     private String buildLanguageMenu() {
@@ -127,12 +132,13 @@ public class UssdController {
 
 
     private String getConfirmationMessage(String languageCode, String question) {
-        String englishMessage = "Thank you! Processing your question: \n\n\"" +
-                truncate(question, 40) + "\"\n\nAnswer will be sent via SMS. ";
-        if (languageCode.equals("en")) {
-            return englishMessage;
-        }
-        return translationService.translate(englishMessage, "en", languageCode);
+        Map<String, String> messages = Map.of(
+                "en", "Thank you! Processing your question. Answer will be sent via SMS shortly.",
+                "yo", "Ẹ ṣeun! Ń ṣiṣẹ́ lórí ìbéèrè rẹ. A ó fi ìdáhùn ránṣẹ́ nípasẹ̀ SMS láìpẹ́.",
+                "ig", "Daalụ! Na-edozi ajụjụ gị. A ga-eziga azịza site na SMS n'oge na-adịghị anya.",
+                "ha", "Na gode! Ana aiki akan tambayar ku. Za a aika amsa ta SMS nan ba da jimawa ba."
+        );
+        return messages.getOrDefault(languageCode, messages.get("en"));
     }
 
     private void processQuestionAsync(String sessionId, String phoneNumber,
