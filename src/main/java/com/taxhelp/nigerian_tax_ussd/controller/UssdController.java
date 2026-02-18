@@ -110,15 +110,14 @@ public class UssdController {
     }
 
     private String translatePrompt(String languageCode) {
-        // Pre translate prompt (cached)
-        Map<String, String> messages = Map.of(
-                "en", "Thank you! Processing your question. Answer will be sent via SMS shortly.",
-                "yo", "Ẹ ṣeun! Ń ṣiṣẹ́ lórí ìbéèrè rẹ. A ó fi ìdáhùn ránṣẹ́ nípasẹ̀ SMS láìpẹ́.",
-                "ig", "Daalụ! Na-edozi ajụjụ gị. A ga-eziga azịza site na SMS n'oge na-adịghị anya.",
-                "ha", "Na gode! Ana aiki akan tambayar ku. Za a aika amsa ta SMS nan ba da jimawa ba."
+// Pre-translated prompts (cached) - instant response
+        Map<String, String> prompts = Map.of(
+                "en", "Enter your tax question:\n\nExample: What is VAT rate?",
+                "yo", "Tẹ ìbéèrè owó-orí rẹ sílẹ̀:\n\nÀpẹẹrẹ: Kí ni oṣùwọ̀n VAT?",
+                "ig", "Tinye ajụjụ ụtụ isi gị:\n\nỌmụmaatụ: Gịnị bụ ọnụego VAT?",
+                "ha", "Shigar da tambayar harajin ku:\n\nMisali: Menene ƙimar VAT?"
         );
-
-        return messages.getOrDefault(languageCode, messages.get("en"));
+        return prompts.getOrDefault(languageCode, prompts.get("en"));
     }
 
     private String buildLanguageMenu() {
