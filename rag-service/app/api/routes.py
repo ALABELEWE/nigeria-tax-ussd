@@ -5,23 +5,15 @@ from fastapi import APIRouter, HTTPException
 from app.models.schemas import QueryRequest, QueryResponse, HealthResponse
 from app.services.ai_engine import answer_tax_question
 from app.core.db import db
-import ollama
+from app.core.config import get_settings, is_cloud_environment
 
 router = APIRouter()
+settings = get_settings()
 
 @router.post("/query", response_model=QueryResponse)
 async def query_tax_assistant(request: QueryRequest):
     """
     Answer a Nigerian tax policy question using RAG.
-
-    Args:
-        request: QueryRequest containing the question
-
-    Returns:
-        QueryResponse with the answer and metadata
-
-    Raises:
-        HTTPException: If an error occurs during processing
     """
     try:
         # Call the AI engine to get the answer
@@ -42,10 +34,7 @@ async def query_tax_assistant(request: QueryRequest):
 async def health_check():
     """
     Check the health status of the RAG service.
-    Tests database and Ollama connectivity.
-
-    Returns:
-        HealthResponse with system status
+    Tests database and LLM connectivity.
     """
     # Check database connection
     try:
@@ -57,19 +46,28 @@ async def health_check():
         print(f"Database health check failed: {e}")
         db_status = "disconnected"
 
-    # Check Ollama connection
-    try:
-        ollama.list()  # Simple test to see if Ollama is running
-        ollama_status = "connected"
-    except Exception as e:
-        print(f"Ollama health check failed: {e}")
-        ollama_status = "disconnected"
+    # Check LLM connection (cloud vs local)
+    if settings.use_groq or is_cloud_environment():
+        # In cloud, just check if API key is set
+        llm_status = "configured" if settings.groq_api_key else "not_configured"
+        llm_type = "groq"
+    else:
+        # Local - check Ollama
+        try:
+            import ollama
+            ollama.list()
+            llm_status = "connected"
+            llm_type = "ollama"
+        except Exception as e:
+            print(f"Ollama health check failed: {e}")
+            llm_status = "disconnected"
+            llm_type = "ollama"
 
     # Determine overall status
-    overall_status = "healthy" if (db_status == "connected" and ollama_status == "connected") else "degraded"
+    overall_status = "healthy" if db_status == "connected" else "degraded"
 
     return HealthResponse(
         status=overall_status,
         database=db_status,
-        ollama=ollama_status
+        ollama=f"{llm_type}:{llm_status}"
     )

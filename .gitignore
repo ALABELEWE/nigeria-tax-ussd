@@ -38,3 +38,39 @@ application-local.yaml
 
 
 src/main/resources/json/service-account-key.json
+
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.log
+
+# IDEs
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local database
+*.db
+*.sqlite
+
+# Docker
+docker-compose.override.yml
+
+# Data files
+data/*.pdf
+*.pdf
+
+# Models cache
+.cache/
+models/
