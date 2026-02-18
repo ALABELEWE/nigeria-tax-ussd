@@ -46,7 +46,7 @@ class DocumentInformationChunks(Model):
     id = AutoField()
     document_id = ForeignKeyField(Documents, backref="document_information_chunks", on_delete='CASCADE')
     chunk = TextField()
-    embedding = VectorField(dimensions=768)
+    embedding = VectorField(dimensions=384)
 
     class Meta:
         database = db
