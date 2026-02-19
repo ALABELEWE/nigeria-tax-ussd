@@ -50,7 +50,7 @@ public class SmsServiceImpl implements SmsService {
             formData.add("username", africasTalkingProperties.getUsername());
             formData.add("to", phoneNumber);
             formData.add("message", message);
-//            formData.add("from", africasTalkingProperties.getSenderId());
+            formData.add("from", africasTalkingProperties.getSenderId());
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
