@@ -35,6 +35,7 @@ africastalking:
   api-key: ${AFRICASTALKING_API_KEY}
   sms-url: ${AFRICASTALKING_SMS_URL}
   shortcode: ${AFRICASTALKING_SHORTCODE}
+  sender-id: ${AFRICASTALKING_SENDER_ID}
 
 # Twilio Configuration
 twilio:
