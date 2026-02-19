@@ -4,11 +4,14 @@ import com.taxhelp.nigerian_tax_ussd.config.AfricasTalkingProperties;
 import com.taxhelp.nigerian_tax_ussd.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,6 +24,7 @@ public class SmsServiceImpl implements SmsService {
 
 //    private final WebClient smsWebClient;
     private final AfricasTalkingProperties africasTalkingProperties;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public void sendSmsAsync(String phoneNumber, String message) {
@@ -30,6 +34,10 @@ public class SmsServiceImpl implements SmsService {
 
     private void sendSms(String phoneNumber, String message) {
         try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set("Accept", "Application/json");
+            headers.set("apiKey", africasTalkingProperties.getApiKey());
             // Create a NEW WebClient specifically for SMS
             WebClient smsClient = WebClient.builder()
                     .baseUrl(africasTalkingProperties.getSmsUrl())
@@ -42,7 +50,9 @@ public class SmsServiceImpl implements SmsService {
             formData.add("username", africasTalkingProperties.getUsername());
             formData.add("to", phoneNumber);
             formData.add("message", message);
-            formData.add("from", africasTalkingProperties.getSenderId());
+//            formData.add("from", africasTalkingProperties.getSenderId());
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
             // DEBUG LOG
             log.info("SMS Request - Username: {}, From: {}, ApiKey: {}",
@@ -52,14 +62,15 @@ public class SmsServiceImpl implements SmsService {
 
             log.info("Calling Africa's Talking SMS API at: {}", africasTalkingProperties.getSmsUrl());
 
-            String response = smsClient
-                    .post()
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(BodyInserters.fromFormData(formData))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-            log.info("SMS sent successfully. Response: {}",  response);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    africasTalkingProperties.getSmsUrl(),
+                    request,
+                    String.class
+            );
+
+            log.info("SMS sent successfully. Status: {}, Response: {}",
+                    response.getStatusCode(),
+                    response.getBody());
         }catch (Exception e){
             log.error("Failed to send SMS to {}", phoneNumber, e);
         }
