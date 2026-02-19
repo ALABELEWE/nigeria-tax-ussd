@@ -39,9 +39,10 @@ public class SmsServiceImpl implements SmsService {
 
             // Build form data
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("username", africasTalkingProperties.getUsername() );
-            formData.add("to",  phoneNumber);
+            formData.add("username", africasTalkingProperties.getUsername());
+            formData.add("to", phoneNumber);
             formData.add("message", message);
+            formData.add("from", africasTalkingProperties.getSenderId());
 
             log.info("Calling Africa's Talking SMS API at: {}", africasTalkingProperties.getSmsUrl());
 
