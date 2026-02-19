@@ -44,6 +44,12 @@ public class SmsServiceImpl implements SmsService {
             formData.add("message", message);
             formData.add("from", africasTalkingProperties.getSenderId());
 
+            // DEBUG LOG
+            log.info("SMS Request - Username: {}, From: {}, ApiKey: {}",
+                    africasTalkingProperties.getUsername(),
+                    africasTalkingProperties.getSenderId(),
+                    africasTalkingProperties.getApiKey().substring(0, 10) + "...");
+
             log.info("Calling Africa's Talking SMS API at: {}", africasTalkingProperties.getSmsUrl());
 
             String response = smsClient
