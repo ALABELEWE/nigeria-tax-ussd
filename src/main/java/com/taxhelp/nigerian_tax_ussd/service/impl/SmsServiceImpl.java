@@ -1,78 +1,78 @@
 package com.taxhelp.nigerian_tax_ussd.service.impl;
 
+import com.africastalking.AfricasTalking;
+import com.africastalking.SmsService;
+import com.africastalking.sms.Recipient;
 import com.taxhelp.nigerian_tax_ussd.config.AfricasTalkingProperties;
-import com.taxhelp.nigerian_tax_ussd.service.SmsService;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SmsServiceImpl implements SmsService {
+public class SmsServiceImpl implements com.taxhelp.nigerian_tax_ussd.service.SmsService {
 
-//    private final WebClient smsWebClient;
     private final AfricasTalkingProperties africasTalkingProperties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private SmsService smsService;
+
+    @PostConstruct
+    public void init() {
+        // Initialize the SDK once at startup
+        AfricasTalking.initialize(
+                africasTalkingProperties.getUsername(),
+                africasTalkingProperties.getApiKey()
+        );
+
+        // Get the SMS service
+        smsService = AfricasTalking.getService(AfricasTalking.SERVICE_SMS);
+
+        log.info("Africa's Talking ADK initialized with username: {}",
+                africasTalkingProperties.getUsername());
+
+    }
 
     @Override
     public void sendSmsAsync(String phoneNumber, String message) {
-        log.info("Sending sms to {} with message: {}",  phoneNumber, message);
+        log.info("Sending SMS to {} with message: {}", phoneNumber, message);
         CompletableFuture.runAsync(() -> sendSms(phoneNumber, message));
     }
 
     private void sendSms(String phoneNumber, String message) {
-        try{
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.set("Accept", "Application/json");
-            headers.set("apiKey", africasTalkingProperties.getApiKey());
-            // Create a NEW WebClient specifically for SMS
-            WebClient smsClient = WebClient.builder()
-                    .baseUrl(africasTalkingProperties.getSmsUrl())
-                    .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
-                    .defaultHeader("apiKey", africasTalkingProperties.getApiKey())
-                    .build();
+        try {
+            // Set recipients (SDK requires array)
+            String[] recipients = new String[]{phoneNumber};
 
-            // Build form data
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("username", africasTalkingProperties.getUsername());
-            formData.add("to", phoneNumber);
-            formData.add("message", message);
-            formData.add("from", africasTalkingProperties.getSenderId());
+            // Set sender ID (can be null for default)
+            String from = africasTalkingProperties.getSenderId();
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
+            log.info("Calling Africa's Talking SMS API - From: {}, To: {}", from, phoneNumber);
 
-            // DEBUG LOG
-            log.info("SMS Request - Username: {}, From: {}, ApiKey: {}",
-                    africasTalkingProperties.getUsername(),
-                    africasTalkingProperties.getSenderId(),
-                    africasTalkingProperties.getApiKey().substring(0, 10) + "...");
+            // Send SMS using SDK
+            List<Recipient> response = smsService.send(message, from, recipients, true);
 
-            log.info("Calling Africa's Talking SMS API at: {}", africasTalkingProperties.getSmsUrl());
+            for (Recipient recipient : response) {
+                log.info("SMS Result - Number: {}. Status: {}, MessageId: {}, Cost: {}",
+                        recipient.number,
+                        recipient.status,
+                        recipient.messageId,
+                        recipient.cost);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    africasTalkingProperties.getSmsUrl(),
-                    request,
-                    String.class
-            );
-
-            log.info("SMS sent successfully. Status: {}, Response: {}",
-                    response.getStatusCode(),
-                    response.getBody());
-        }catch (Exception e){
-            log.error("Failed to send SMS to {}", phoneNumber, e);
+                if ("Success".equalsIgnoreCase(recipient.status)) {
+                    log.info("SMS sent successfully to {}", recipient.number);
+                }else {
+                    log.error("SMS failed to {}: {}", recipient.number, recipient.status);
+                }
+            }
+        }catch (Exception ex){
+            log.error("Failed to send SMS to {}: {}", phoneNumber, ex.getMessage(), ex);
         }
     }
+
+
 }
