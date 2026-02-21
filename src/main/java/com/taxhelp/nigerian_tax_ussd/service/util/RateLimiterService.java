@@ -19,8 +19,8 @@ public class RateLimiterService {
     private final Map<String, LocalDateTime> lastCleanupTime = new ConcurrentHashMap<>();
 
     // Configuration
-    private static final int MAX_REQUESTS_PER_DAY = 20;
-    private static final int MAX_REQUESTS_PER_HOUR = 5;
+    private static final int MAX_REQUESTS_PER_DAY = 50;
+    private static final int MAX_REQUESTS_PER_HOUR = 15;
 
     // Store hourly counts: "phoneNumber_date_hour" -> count
     private final Map<String, AtomicInteger> hourlyRequestCounts = new ConcurrentHashMap<>();
