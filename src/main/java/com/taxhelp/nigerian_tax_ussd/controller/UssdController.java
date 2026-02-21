@@ -37,7 +37,7 @@ public class UssdController {
     private final RagServiceProperties ragProps;
     private final SessionService sessionService;
     private final RateLimiterService  rateLimiterService;
-//    private final QuestionLogService questionLogService;
+    private final QuestionLogService questionLogService;
 
 
     @PostMapping(value = "/callback", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -223,15 +223,15 @@ public class UssdController {
                 // Always log even when there on error
                 int responseTime =  (int) (System.currentTimeMillis() - startTime);
 
-//                questionLogService.logQuestion(
-//                        sessionId,
-//                        phoneNumber,
-//                        question,
-//                        finalAnswer != null ? finalAnswer : "No answer generated",
-//                        userLanguage,
-//                        smsDelivered,
-//                        responseTime
-//                );
+                questionLogService.logQuestion(
+                        sessionId,
+                        phoneNumber,
+                        question,
+                        finalAnswer != null ? finalAnswer : "No answer generated",
+                        userLanguage,
+                        smsDelivered,
+                        responseTime
+                );
 
                 log.info("Question logged - ResponseTime: {}ms, SMS: {}", responseTime, smsDelivered);
             }
