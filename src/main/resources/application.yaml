@@ -4,10 +4,10 @@ spring:
   application:
     name: ${SPRING_APPLICATION_NAME:nigerian-tax-ussd}
 
-  # PostgreSQL - Simple approach
-#  datasource:
-#    url: ${DATABASE_URL}
-#    driver-class-name: org.postgresql.Driver
+#   PostgreSQL - Simple approach
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
