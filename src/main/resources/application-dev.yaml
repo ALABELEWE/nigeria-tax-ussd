@@ -1,11 +1,14 @@
 spring:
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://localhost:5432/nigerian_tax_db_local
+    username: postgres
+    password: Omotosho3664!
     driver-class-name: org.postgresql.Driver
+
 
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Drop and recreate tables on restart (for dev testing)
+      ddl-auto: update  # Drop and recreate tables on restart (for dev testing)
     show-sql: true  # Show SQL queries in logs (helpful for debugging)
     properties:
       hibernate:
@@ -37,6 +40,11 @@ rag-service:
   query-endpoint: /api/v1/query
   timeout: 30
   max-length: 500
+
+# Google Translation
+google:
+  api:
+    key: ${GOOGLE_API_KEY}
 
 # Server configuration
 server:
