@@ -4,6 +4,13 @@ spring:
   application:
     name: ${SPRING_APPLICATION_NAME:nigerian-tax-ussd}
 
+  # PostgreSQL Configuration - ADD THIS SECTION
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:nigerian_tax_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
