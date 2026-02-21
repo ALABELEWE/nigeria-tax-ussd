@@ -29,7 +29,7 @@ public class QuestionLogServiceImpl implements QuestionLogService {
             questionLog.setLanguage(language);
             questionLog.setSmsDelivered(smsDelivered);
             questionLog.setResponseTimeMs(responseTimeMs);
-            questionLog.setTimeStamp(LocalDateTime.now());
+            questionLog.setTimestamp(LocalDateTime.now());
 
             questionLogRepository.save(questionLog);
 
