@@ -8,8 +8,10 @@ import com.taxhelp.nigerian_tax_ussd.model.Language;
 import com.taxhelp.nigerian_tax_ussd.model.UserSession;
 import com.taxhelp.nigerian_tax_ussd.model.request.RagQueryRequest;
 import com.taxhelp.nigerian_tax_ussd.model.response.RagQueryResponse;
+import com.taxhelp.nigerian_tax_ussd.service.QuestionLogService;
 import com.taxhelp.nigerian_tax_ussd.service.SessionService;
 import com.taxhelp.nigerian_tax_ussd.service.SmsService;
+import com.taxhelp.nigerian_tax_ussd.service.util.RateLimiterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -34,9 +36,12 @@ public class UssdController {
     private final GoogleTranslationService translationService;
     private final RagServiceProperties ragProps;
     private final SessionService sessionService;
+    private final RateLimiterService  rateLimiterService;
+    private final QuestionLogService questionLogService;
+
 
     @PostMapping(value = "/callback", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> handleUssdCallback(
+    public String handleUssdCallback(
             @RequestParam String sessionId,
             @RequestParam String serviceCode,
             @RequestParam String phoneNumber,
@@ -45,6 +50,20 @@ public class UssdController {
     ) {
         log.info("USSD Request - SessionID: {}, PhoneNumber: {}, Text: '{}'",
                 sessionId, phoneNumber, text);
+
+        // Rate Limiting check
+        // Only check rate limit for actual questions, not menu navigation
+        if (!text.isEmpty()) {
+            if (!rateLimiterService.allowRequest(phoneNumber)) {
+                int remaining = rateLimiterService.getRemainingRequests(phoneNumber);
+
+                if (remaining == 0) {
+                    return "END You have reached your daily limit of 20 questions. Please try again tomorrow.";
+                } else {
+                    return "END You are sending questions too quickly. Please wait a few minutes and try again.";
+                }
+            }
+        }
 
         try{
             // Get or create session in Redis
@@ -60,10 +79,10 @@ public class UssdController {
             }
 
             log.info("USSD Response: {}", response.substring(0, Math.min(60, response.length())));
-            return ResponseEntity.ok(response);
+            return response;
         }catch (Exception e){
             log.error("USSD Error: {}", e.getMessage(), e);
-            return ResponseEntity.ok("END Service error. Please try again later.");
+            return "END Service error. Please try again later.";
         }
 
     }
@@ -142,19 +161,24 @@ public class UssdController {
 
     private void processQuestionAsync(String sessionId, String phoneNumber,
                                       String question, String userLanguage) {
+
         new Thread(() -> {
+            long startTime = System.currentTimeMillis();
+            boolean smsDelivered = false;
+            String finalAnswer = null;
+
             try{
                 log.info("Processing Question Async - SessionID: {}, PhoneNumber: {}", sessionId, phoneNumber);
 
                 // Translate question to English (if needed)
                 String questionInEnglish = question;
-                if (!userLanguage.equals("en")) {
+                if (!userLanguage.equals("en")){
                     log.info("Translating question from {} to en", userLanguage);
                     questionInEnglish = translationService.translate(questionInEnglish, userLanguage, "en");
                     log.info("Question In English Async - PhoneNumber: {}", phoneNumber);
                 }
 
-                log.info(" Querying RAG system...");
+                log.info(" Question RAG system...");
                 RagQueryRequest request = RagQueryRequest.builder()
                         .question(questionInEnglish)
                         .maxLength(ragProps.getMaxLength())
@@ -168,7 +192,8 @@ public class UssdController {
                         .bodyToMono(RagQueryResponse.class)
                         .block();
 
-                if (response == null || !response.getSuccess()) {
+                if (response == null || !response.getSuccess()){
+                    finalAnswer = "Error: RAG service failed";
                     sendErrorSms(phoneNumber, userLanguage);
                     return;
                 }
@@ -177,23 +202,41 @@ public class UssdController {
                 log.info("RAG Response - Answer: '{}'",
                         answerInEnglish.substring(0, Math.min(100, answerInEnglish.length())));
 
-
                 String answerInUserLanguage = answerInEnglish;
-                if (!userLanguage.equals("en")) {
+                if (!userLanguage.equals("en")){
                     log.info("Translating question from en to {}", userLanguage);
                     answerInUserLanguage = translationService.translate(answerInEnglish, "en", userLanguage);
                     log.info(" Answer In {}: '{}'", userLanguage, answerInUserLanguage);
                 }
+                finalAnswer = answerInUserLanguage;
 
                 String smsMessage = formatSmsMessage(answerInUserLanguage, userLanguage);
                 smsService.sendSmsAsync(phoneNumber, smsMessage);
 
+                smsDelivered = true;
                 log.info("Complete! SMS sent to: {}", phoneNumber);
-            }catch (Exception e){
-                log.error("Error processing Question Async - SessionID: {}, PhoneNumber: {}", sessionId, phoneNumber);
+            } catch (Exception e){
+                log.error("Error processing Question Async - SessionID: {}, PhoneNumber: {}", sessionId, phoneNumber, e);
+                finalAnswer = "Error: " + e.getMessage();
                 sendErrorSms(phoneNumber, userLanguage);
+            }finally {
+                // Always log even when there on error
+                int responseTime =  (int) (System.currentTimeMillis() - startTime);
+
+                questionLogService.logQuestion(
+                        sessionId,
+                        phoneNumber,
+                        question,
+                        finalAnswer != null ? finalAnswer : "No answer generated",
+                        userLanguage,
+                        smsDelivered,
+                        responseTime
+                );
+
+                log.info("Question logged - ResponseTime: {}ms, SMS: {}", responseTime, smsDelivered);
             }
-        }, "ussd-processor " + sessionId).start();
+
+        }, "ussd-processor-" + sessionId).start();
     }
 
     private String formatSmsMessage(String answer, String languageCode) {

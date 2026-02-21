@@ -15,15 +15,5 @@ public class AppConfig {
                 .build();
     }
 
-//    @Bean
-//    public WebClient smsWebClient(AfricasTalkingProperties africasTalkingProperties) {
-//        return WebClient.builder()
-//                .baseUrl(africasTalkingProperties.getSmsUrl())
-//                .defaultHeader("apiKey", africasTalkingProperties.getApiKey())
-//                .defaultHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-//                .build();
-//
-//    }
-
 
 }
