@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Update schema without dropping (safer for staging)
+    show-sql: false  # Don't show SQL in staging logs
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+# Staging logging (moderate verbosity)
+logging:
+  level:
+    com.taxhelp: INFO
+    org.springframework.web: INFO
+
+# Africa's Talking configuration
+africas-talking:
+  username: ${AFRICAS_TALKING_USERNAME}
+  api-key: ${AFRICAS_TALKING_API_KEY}
+  sender-id: ${AFRICAS_TALKING_SENDER_ID:ATAlert}
+
+# RAG Service configuration
+rag-service:
+  base-url: ${RAG_SERVICE_URL}
+  query-endpoint: /api/v1/query
+  timeout: 30
+  max-length: 500
+
+# Server configuration
+server:
+  port: ${PORT:8080}

@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Drop and recreate tables on restart (for dev testing)
+    show-sql: true  # Show SQL queries in logs (helpful for debugging)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true  # Format SQL for readability
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+# Dev-specific logging (more verbose)
+logging:
+  level:
+    com.taxhelp: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.web: DEBUG
+
+# Africa's Talking configuration
+africas-talking:
+  username: ${AFRICAS_TALKING_USERNAME}
+  api-key: ${AFRICAS_TALKING_API_KEY}
+  sender-id: ${AFRICAS_TALKING_SENDER_ID:ATAlert}
+
+# RAG Service configuration
+rag-service:
+  base-url: ${RAG_SERVICE_URL:https://nigerian-tax-rag.onrender.com}
+  query-endpoint: /api/v1/query
+  timeout: 30
+  max-length: 500
+
+# Server configuration
+server:
+  port: ${PORT:8080}
