@@ -4,9 +4,9 @@ spring:
   application:
     name: ${SPRING_APPLICATION_NAME:nigerian-tax-ussd}
 
-  # PostgreSQL Configuration - ADD THIS SECTION
+  # PostgreSQL - Simple approach
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/nigerian_tax_db}
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
 
   jpa:
