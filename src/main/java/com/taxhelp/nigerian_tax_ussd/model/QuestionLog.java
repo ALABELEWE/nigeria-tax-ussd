@@ -29,7 +29,7 @@ public class QuestionLog {
     @Column(nullable = false, length = 5)
     private  String language;
 
-    @Column(nullable = false)
+    @Column(name = "time_stamp", nullable = false)
     private LocalDateTime timestamp;
 
     @Column(nullable = false)
