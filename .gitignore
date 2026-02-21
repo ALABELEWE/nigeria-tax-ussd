@@ -35,6 +35,7 @@ build/
 .env
 .env.*
 application-local.yaml
+LOCAL_SETUP.md
 
 
 src/main/resources/json/service-account-key.json
