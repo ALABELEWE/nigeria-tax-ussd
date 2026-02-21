@@ -20,7 +20,7 @@ public interface QuestionLogRepository extends JpaRepository<QuestionLog, Long> 
     List<QuestionLog> findByTimestampBetween(LocalDateTime start, LocalDateTime end);
 
     // Count questions today - FIXED QUERY
-    @Query("SELECT COUNT(q) FROM QuestionLog q WHERE CAST(q.timeStamp AS LocalDate) = :today")
+    @Query("SELECT COUNT(q) FROM QuestionLog q WHERE CAST(q.timestamp AS LocalDate) = :today")
     Long countTodayQuestions(@Param("today") LocalDate today);
 
     // Count by langauge

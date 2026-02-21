@@ -30,7 +30,7 @@ public class QuestionLog {
     private  String language;
 
     @Column(nullable = false)
-    private LocalDateTime timeStamp;
+    private LocalDateTime timestamp;
 
     @Column(nullable = false)
     private Boolean smsDelivered;
@@ -42,12 +42,12 @@ public class QuestionLog {
     private String sessionId;
 
     public QuestionLog(String phoneNumber, String question, String answer,
-                       String language, LocalDateTime timeStamp, Boolean smsDelivered) {
+                       String language, LocalDateTime timestamp, Boolean smsDelivered) {
         this.phoneNumber = phoneNumber;
         this.question = question;
         this.answer = answer;
         this.language = language;
-        this.timeStamp = timeStamp;
+        this.timestamp = timestamp;
         this.smsDelivered = smsDelivered;
     }
 }
