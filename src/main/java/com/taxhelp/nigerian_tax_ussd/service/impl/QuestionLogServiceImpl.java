@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -40,8 +41,8 @@ public class QuestionLogServiceImpl implements QuestionLogService {
     }
 
     // Get analytics data
-    public Long getTodayQuestionCount(){
-        return questionLogRepository.countTodayQuestions();
+    public Long getTodayQuestionCount() {
+        return questionLogRepository.countTodayQuestions(LocalDate.now());
     }
 
 
