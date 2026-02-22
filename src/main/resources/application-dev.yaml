@@ -1,42 +1,45 @@
+# Remote Development Configuration (Render)
+# Used when deploying develop branch to Render
+# Profile: dev
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/nigerian_tax_db_local
-    username: postgres
-    password: Omotosho3664!
+    # Remote PostgreSQL on Render
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
-
 
   jpa:
     hibernate:
-      ddl-auto: update  # Drop and recreate tables on restart (for dev testing)
-    show-sql: true  # Show SQL queries in logs (helpful for debugging)
+      ddl-auto: update  # Update schema
+    show-sql: true  # Show SQL in logs (helpful for debugging)
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true  # Format SQL for readability
+        format_sql: true
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      # Remote Redis on Render
+      host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD}
 
-# Dev-specific logging (more verbose)
+# Dev logging (more verbose than staging/prod)
 logging:
   level:
     com.taxhelp: DEBUG
     org.hibernate.SQL: DEBUG
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
 
-# Africa's Talking configuration
+# Africa's Talking
 africas-talking:
   username: ${AFRICAS_TALKING_USERNAME}
   api-key: ${AFRICAS_TALKING_API_KEY}
   sender-id: ${AFRICAS_TALKING_SENDER_ID:ATAlert}
 
-# RAG Service configuration
+# RAG Service
 rag-service:
-  base-url: ${RAG_SERVICE_URL:https://nigerian-tax-rag.onrender.com}
+  base-url: ${RAG_SERVICE_URL}
   query-endpoint: /api/v1/query
   timeout: 30
   max-length: 500
@@ -46,6 +49,6 @@ google:
   api:
     key: ${GOOGLE_API_KEY}
 
-# Server configuration
+# Server port (Render sets this)
 server:
-  port: ${PORT:8080}
+  port: ${PORT:10000}
