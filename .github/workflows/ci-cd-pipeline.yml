@@ -8,7 +8,7 @@ on:
 
 jobs:
   # Job 1: Build and Test
-  build-and-test:
+  build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
     
@@ -40,9 +40,9 @@ jobs:
           retention-days: 5
 
     # Job 2: Deploy to Dev
-    deploy-dev:
+    deploy_dev:
       name: Deploy to Dev
-      needs: build-and-test
+      needs: build_and_test
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       runs-on: ubuntu-latest
       environment:
@@ -90,9 +90,9 @@ jobs:
             echo " Health check passed"
 
   # Job 3: Deploy to Staging
-  deploy-staging:
+  deploy_staging:
     name: Deploy to Staging
-    needs: build-and-test
+    needs: build_and_test
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
@@ -140,9 +140,9 @@ jobs:
           echo " Health check passed"
 
   # Job 4: Deploy to Production (Manual Approval Required)
-  deploy-production:
+  deploy_production:
     name: Deploy to Production
-    needs: build-and-test
+    needs: build_and_test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
