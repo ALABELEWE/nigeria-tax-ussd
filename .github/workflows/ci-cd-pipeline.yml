@@ -105,7 +105,7 @@ jobs:
           echo " Deploying to Production..."
           RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_PROD }})
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ]; then
+          if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
             echo " Production deployment triggered successfully!"
           else
             echo " Deployment trigger failed with HTTP $HTTP_CODE"
