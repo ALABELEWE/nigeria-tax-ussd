@@ -90,15 +90,36 @@ jobs:
       url: https://nigeria-tax-ussd-staging.onrender.com
 
     steps:
-    - name: Trigger Render Deploy (Staging)
-      run: |
-        echo " Deploying to Staging..."
-        RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_STAGING }})
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-        if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
-          echo " Staging deployment triggered successfully! (HTTP $HTTP_CODE)"
-        else
-          echo " Deployment trigger failed with HTTP $HTTP_CODE"
+      - name: Trigger Render Deploy (Staging)
+        run: |
+          echo " Deploying to Staging..."
+          RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_STAGING }})
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
+            echo " Staging deployment triggered successfully!"
+          else
+            echo " Deployment trigger failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Wait for deployment
+        run: |
+          echo " Waiting 90 seconds for deployment to complete..."
+          sleep 90
+
+      - name: Verify Staging Deployment
+        run: |
+          echo " Checking staging health..."
+          for i in {1..5}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd-staging.onrender.com/health || echo "000")
+            if [ $HTTP_CODE -eq 200 ]; then
+              echo " Staging is healthy! (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 15s..."
+            sleep 15
+          done
+          echo " Staging health check failed after 5 attempts"
           exit 1
         fi
 
@@ -132,43 +153,43 @@ jobs:
       url: https://nigeria-tax-ussd.onrender.com
 
     steps:
-    - name: Deploy to Production
-      run: |
-        echo " Deploying to Production..."
-        RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_PROD }})
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-        if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
-          echo " Production deployment triggered successfully! (HTTP $HTTP_CODE)"
-        else
-          echo " Deployment trigger failed with HTTP $HTTP_CODE"
-          exit 1
-        fi
-
-    - name: Wait for deployment
-      run: |
-        echo " Waiting 120 seconds for deployment to complete..."
-        sleep 120
-
-    - name: Verify Production Deployment
-      run: |
-        echo " Checking production health..."
-        for i in {1..5}; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd.onrender.com/health || echo "000")
-          if [ $HTTP_CODE -eq 200 ]; then
-            echo " Production is healthy! (HTTP $HTTP_CODE)"
-            exit 0
+      - name: Deploy to Production
+        run: |
+          echo " Deploying to Production..."
+          RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_PROD }})
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
+            echo " Production deployment triggered successfully!"
+          else
+            echo " Deployment trigger failed with HTTP $HTTP_CODE"
+            exit 1
           fi
-          echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 20s..."
-          sleep 20
-        done
-        echo " Production health check failed after 5 attempts"
-        exit 1
 
-    - name: Deployment Summary
-      if: success()
-      run: |
-        echo " Production Deployment Successful!"
-        echo " USSD Service: *347*976#"
-        echo " URL: https://nigeria-tax-ussd.onrender.com"
-        echo " Health check passed"
-        echo " Live for users!"
+      - name: Wait for deployment
+        run: |
+          echo " Waiting 120 seconds for deployment to complete..."
+          sleep 120
+
+      - name: Verify Production Deployment
+        run: |
+          echo " Checking production health..."
+          for i in {1..5}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd.onrender.com/health || echo "000")
+            if [ $HTTP_CODE -eq 200 ]; then
+              echo " Production is healthy! (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 20s..."
+            sleep 20
+          done
+          echo " Production health check failed after 5 attempts"
+          exit 1
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo " Production Deployment Successful!"
+          echo " USSD Service: *347*976#"
+          echo " URL: https://nigeria-tax-ussd.onrender.com"
+          echo " Health check passed"
+          echo " Live for users!"
