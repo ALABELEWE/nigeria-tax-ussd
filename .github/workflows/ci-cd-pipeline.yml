@@ -12,31 +12,31 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v3
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Build with Maven
-      run: mvn clean compile -DskipTests
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests
 
-    - name: Run Unit Tests
-      run: mvn test
+      - name: Run Unit Tests
+        run: mvn test
 
-    - name: Package Application
-      run: mvn package -DskipTests
+      - name: Package Application
+        run: mvn package -DskipTests
 
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-jar
-        path: target/*.jar
-        retention-days: 5
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 5
 
   deploy_dev:
     name: Deploy to Dev
@@ -48,37 +48,37 @@ jobs:
       url: https://nigeria-tax-ussd-dev.onrender.com
 
     steps:
-    - name: Trigger Render Deploy (Dev)
-      run: |
-        echo " Deploying to Dev..."
-        RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_DEV }})
-        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-        if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
-          echo " Dev deployment triggered successfully! (HTTP $HTTP_CODE)"
-        else
-          echo " Deployment trigger failed with HTTP $HTTP_CODE"
-          exit 1
-        fi
-
-    - name: Wait for deployment
-      run: |
-        echo " Waiting 90 seconds for deployment to complete..."
-        sleep 90
-
-    - name: Verify Dev Deployment
-      run: |
-        echo " Checking dev health..."
-        for i in {1..5}; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd-dev.onrender.com/health || echo "000")
-          if [ $HTTP_CODE -eq 200 ]; then
-            echo " Dev is healthy! (HTTP $HTTP_CODE)"
-            exit 0
+      - name: Trigger Render Deploy (Dev)
+        run: |
+          echo " Deploying to Dev..."
+          RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_DEV }})
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
+            echo " Dev deployment triggered successfully! (HTTP $HTTP_CODE)"
+          else
+            echo " Deployment trigger failed with HTTP $HTTP_CODE"
+            exit 1
           fi
-          echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 15s..."
-          sleep 15
-        done
-        echo " Dev health check failed after 5 attempts"
-        exit 1
+
+      - name: Wait for deployment
+        run: |
+          echo " Waiting 90 seconds for deployment to complete..."
+          sleep 90
+
+      - name: Verify Dev Deployment
+        run: |
+          echo " Checking dev health..."
+          for i in {1..5}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd-dev.onrender.com/health || echo "000")
+            if [ $HTTP_CODE -eq 200 ]; then
+              echo " Dev is healthy! (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 15s..."
+            sleep 15
+          done
+          echo " Dev health check failed after 5 attempts"
+          exit 1
 
   deploy_staging:
     name: Deploy to Staging
@@ -96,7 +96,7 @@ jobs:
           RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_STAGING }})
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
-            echo " Staging deployment triggered successfully!"
+            echo " Staging deployment triggered successfully! (HTTP $HTTP_CODE)"
           else
             echo " Deployment trigger failed with HTTP $HTTP_CODE"
             exit 1
@@ -121,27 +121,6 @@ jobs:
           done
           echo " Staging health check failed after 5 attempts"
           exit 1
-        fi
-
-    - name: Wait for deployment
-      run: |
-        echo " Waiting 90 seconds for deployment to complete..."
-        sleep 90
-
-    - name: Verify Staging Deployment
-      run: |
-        echo " Checking staging health..."
-        for i in {1..5}; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd-staging.onrender.com/health || echo "000")
-          if [ $HTTP_CODE -eq 200 ]; then
-            echo " Staging is healthy! (HTTP $HTTP_CODE)"
-            exit 0
-          fi
-          echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 15s..."
-          sleep 15
-        done
-        echo " Staging health check failed after 5 attempts"
-        exit 1
 
   deploy_production:
     name: Deploy to Production
@@ -159,7 +138,7 @@ jobs:
           RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_PROD }})
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
-            echo " Production deployment triggered successfully!"
+            echo " Production deployment triggered successfully! (HTTP $HTTP_CODE)"
           else
             echo " Deployment trigger failed with HTTP $HTTP_CODE"
             exit 1
@@ -172,7 +151,7 @@ jobs:
 
       - name: Verify Production Deployment
         run: |
-          echo " Checking production health..."
+          echo "Checking production health..."
           for i in {1..5}; do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd.onrender.com/health || echo "000")
             if [ $HTTP_CODE -eq 200 ]; then
