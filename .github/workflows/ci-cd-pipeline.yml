@@ -39,7 +39,57 @@ jobs:
           path: target/*.jar
           retention-days: 5
 
-  # Job 2: Deploy to Staging
+    # Job 2: Deploy to Dev
+    deploy-dev:
+      name: Deploy to Dev
+      needs: build-and-test
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+      runs-on: ubuntu-latest
+      environment:
+        name: dev
+        url: https://nigeria-tax-ussd-dev.onrender.com
+
+      steps:
+        - name: Trigger Render Deploy (Dev)
+          run: |
+            echo " Deploying to Dev..."
+            RESPONSE=$(curl -X POST -s -w "\n%{http_code}" ${{ secrets.RENDER_DEPLOY_HOOK_DEV }})
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            if [ $HTTP_CODE -eq 200 ] || [ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 202 ]; then
+              echo " Dev deployment triggered successfully! (HTTP $HTTP_CODE)"
+            else
+              echo " Deployment trigger failed with HTTP $HTTP_CODE"
+              exit 1
+            fi
+
+        - name: Wait for deployment
+          run: |
+            echo " Waiting 90 seconds for deployment to complete..."
+            sleep 90
+
+        - name: Verify Dev Deployment
+          run: |
+            echo " Checking dev health..."
+            for i in {1..5}; do
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://nigeria-tax-ussd-dev.onrender.com/health || echo "000")
+              if [ $HTTP_CODE -eq 200 ]; then
+                echo " Dev is healthy! (HTTP $HTTP_CODE)"
+                exit 0
+              fi
+              echo " Attempt $i/5: HTTP $HTTP_CODE, retrying in 15s..."
+              sleep 15
+            done
+            echo " Dev health check failed after 5 attempts"
+            exit 1
+
+        - name: Deployment Summary
+          if: success()
+          run: |
+            echo " Dev Deployment Successful!"
+            echo " URL: https://nigeria-tax-ussd-dev.onrender.com"
+            echo " Health check passed"
+
+  # Job 3: Deploy to Staging
   deploy-staging:
     name: Deploy to Staging
     needs: build-and-test
@@ -89,7 +139,7 @@ jobs:
           echo " URL: https://nigeria-tax-ussd-staging.onrender.com"
           echo " Health check passed"
 
-  # Job 3: Deploy to Production (Manual Approval Required)
+  # Job 4: Deploy to Production (Manual Approval Required)
   deploy-production:
     name: Deploy to Production
     needs: build-and-test
