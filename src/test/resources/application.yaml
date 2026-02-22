@@ -20,6 +20,10 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
+  # Don't create Redis beans
+  redis:
+    enabled: false
+
 # Mock configurations - hardcoded test values
 africas-talking:
   username: test-user
