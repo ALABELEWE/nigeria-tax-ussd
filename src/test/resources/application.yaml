@@ -6,6 +6,10 @@ spring:
     username: sa
     password:
 
+  h2:
+    console:
+      enabled: true
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -19,6 +23,10 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  # Don't create Redis beans
+  redis:
+    enabled: false
 
 # Mock configurations - hardcoded test values
 africas-talking:
