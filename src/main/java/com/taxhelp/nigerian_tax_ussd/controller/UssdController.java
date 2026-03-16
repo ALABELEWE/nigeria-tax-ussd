@@ -167,9 +167,9 @@ public class UssdController {
     private String translatePrompt(String languageCode) {
         Map<String, String> prompts = Map.of(
                 "en", "Enter your tax question:\n\nExample: What is VAT rate?",
-                "yo", "Tẹ ìbéèrè owó-orí rẹ sílẹ̀:\n\nÀpẹẹrẹ: Kí ni oṣùwọ̀n VAT?",
-                "ig", "Tinye ajụjụ ụtụ isi gị:\n\nỌmụmaatụ: Gịnị bụ ọnụego VAT?",
-                "ha", "Shigar da tambayar harajin ku:\n\nMisali: Menene ƙimar VAT?"
+                "yo", "Te ibeere owo-ori re sile:\n\nApeere: Ki ni osuwon VAT?",
+                "ig", "Tinye ajuju utu isi gi:\n\nOmumaaatu: Gini bu onuego VAT?",
+                "ha", "Shigar da tambayar harajin ku:\n\nMisali: Menene kimar VAT?"
         );
         return prompts.getOrDefault(languageCode, prompts.get("en"));
     }
@@ -182,12 +182,11 @@ public class UssdController {
         return menu.toString().trim();
     }
 
-    // ← removed unused `question` parameter
     private String getConfirmationMessage(String languageCode) {
         Map<String, String> messages = Map.of(
                 "en", "Thank you! Processing your question. Answer will be sent via SMS shortly.",
-                "yo", "Ẹ ṣeun! Ń ṣiṣẹ́ lórí ìbéèrè rẹ. A ó fi ìdáhùn ránṣẹ́ nípasẹ̀ SMS láìpẹ́.",
-                "ig", "Daalụ! Na-edozi ajụjụ gị. A ga-eziga azịza site na SMS n'oge na-adịghị anya.",
+                "yo", "E seun! N sisẹ lori ibeere re. A o fi idahun ransẹ nipase SMS laipe.",
+                "ig", "Daalu! Na-edozi ajuju gi. A ga-eziga aziza site na SMS n'oge na-adighi anya.",
                 "ha", "Na gode! Ana aiki akan tambayar ku. Za a aika amsa ta SMS nan ba da jimawa ba."
         );
         return messages.getOrDefault(languageCode, messages.get("en"));
