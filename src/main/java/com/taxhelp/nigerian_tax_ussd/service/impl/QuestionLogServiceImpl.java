@@ -28,7 +28,7 @@ public class QuestionLogServiceImpl implements QuestionLogService {
             questionLog.setAnswer(answer);
             questionLog.setLanguage(language);
             questionLog.setSmsDelivered(smsDelivered);
-            questionLog.setResponseTimeMs(responseTimeMs);
+            questionLog.setResponseTimeMs(Long.valueOf(responseTimeMs));
             questionLog.setTimestamp(LocalDateTime.now());
 
             questionLogRepository.save(questionLog);
