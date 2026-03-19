@@ -52,3 +52,6 @@ google:
 # Server port (Render sets this)
 server:
   port: ${PORT:10000}
+
+admin:
+  key: ${ADMIN_KEY}
