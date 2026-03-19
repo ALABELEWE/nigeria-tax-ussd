@@ -39,3 +39,6 @@ rag-service:
 # Server configuration
 server:
   port: ${PORT:8080}
+
+admin:
+  key: ${ADMIN_KEY}

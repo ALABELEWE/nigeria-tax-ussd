@@ -69,3 +69,6 @@ logging:
   level:
     com.taxhelp: DEBUG
     org.springframework.web: INFO
+
+admin:
+  key: ${ADMIN_KEY}
