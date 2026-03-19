@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "question_logs", indexes = {
-        @Index(name = "idx_phone_number", columnList = "phone_number"),
-        @Index(name = "idx_timestamp", columnList = "timestamp"),
-        @Index(name = "idx_language", columnList = "language"),
-        @Index(name = "idx_quality_score", columnList = "quality_score")
+        @Index(name = "idx_ql_phone_number",  columnList = "phone_number"),
+        @Index(name = "idx_ql_timestamp",     columnList = "timestamp"),
+        @Index(name = "idx_ql_language",      columnList = "language"),
+        @Index(name = "idx_ql_quality_score", columnList = "quality_score")
 })
 @Data
 @Builder

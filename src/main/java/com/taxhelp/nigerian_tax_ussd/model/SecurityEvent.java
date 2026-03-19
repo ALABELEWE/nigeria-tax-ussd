@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "security_events", indexes = {
-    @Index(name = "idx_phone_number", columnList = "phone_number"),
-    @Index(name = "idx_event_type", columnList = "event_type"),
-    @Index(name = "idx_timestamp", columnList = "timestamp"),
-    @Index(name = "idx_severity", columnList = "severity")
+        @Index(name = "idx_se_phone_number", columnList = "phone_number"),
+        @Index(name = "idx_se_event_type",   columnList = "event_type"),
+        @Index(name = "idx_se_timestamp",    columnList = "timestamp"),
+        @Index(name = "idx_se_severity",     columnList = "severity")
 })
 @Data
 @Builder
